@@ -87,7 +87,7 @@ def create_modules(blocks):
                 module.add_module("batch_norm_{0}".format(index), bn)
             
             if activation == "leaky":
-                activation_fn = nn.LeakyReLU(0,1, inplace=True)
+                activation_fn = nn.LeakyReLU(0.1, inplace=True)
                 module.add_module("leaky_{0}".format(index), activation_fn)
         
         elif (x["type"] == "upsample"):
@@ -125,20 +125,22 @@ def create_modules(blocks):
             mask = [int(x) for x in mask]
             anchors = x["anchors"].split(',')
             anchors = [int(a) for a in anchors]
-            anchors = [(anchors[i], anchors[i+1]) for i in range(0, len(anchors))]
+            anchors = [(anchors[i], anchors[i+1]) for i in range(0, len(anchors), 2)]
             anchors = [anchors[i] for i in mask]
 
             detection = DetectionLayer(anchors)
             module.add_module("Detection_{}".format(index), detection)
     
-    # Bookkeeping at the end of the loop
-    module_list.append(module)
-    prev_filters = filters
-    output_filters.append(filters)
+        # Bookkeeping after each iteration
+        module_list.append(module)
+        prev_filters = filters
+        output_filters.append(filters)
 
     return net_info, module_list
 
     
-        
+# Test
+blocks = parse_cfg("config/yolov3.cfg")    
+print(create_modules(blocks))
 
 
